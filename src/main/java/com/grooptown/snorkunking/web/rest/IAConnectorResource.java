@@ -55,11 +55,12 @@ public class IAConnectorResource {
                 String word = words[j];
                 String wordResult = word;
                 if (word != null && word.length() > MIN_WORD_LENGTH) {
-                        String SmallWord =
-                            word.length() >  NUMBER_CHAR_TO_KEEP_IN_THE_WORD ?
-                            word.substring(0, NUMBER_CHAR_TO_KEEP_IN_THE_WORD) : word;
+                        String wordToTest = word.toLowerCase();
+                        wordToTest =
+                            wordToTest.length() >  NUMBER_CHAR_TO_KEEP_IN_THE_WORD ?
+                            wordToTest.substring(0, NUMBER_CHAR_TO_KEEP_IN_THE_WORD) : wordToTest;
 
-                    if (currentWords.contains(SmallWord)) {
+                    if (currentWords.contains(wordToTest)) {
                         // result.append("## ALERT : " + SmallWord + " is duplicated\n");
                         // result.append(line + "\n\n");
                         wordResult =
