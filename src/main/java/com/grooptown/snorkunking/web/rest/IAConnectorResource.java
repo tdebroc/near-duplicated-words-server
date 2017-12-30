@@ -59,10 +59,9 @@ public class IAConnectorResource {
                         wordToTest =
                             wordToTest.length() >  NUMBER_CHAR_TO_KEEP_IN_THE_WORD ?
                             wordToTest.substring(0, NUMBER_CHAR_TO_KEEP_IN_THE_WORD) : wordToTest;
-
-                        System.out.println("#######");
-                        System.out.println(wordToTest);
-                        System.out.println(currentWords);
+                        //  System.out.println("#######");
+                        // System.out.println(wordToTest);
+                        // System.out.println(currentWords);
 
                     if (currentWords.contains(wordToTest)) {
                         wordResult = "<span style=\"color:red\">" + word + "</span>";

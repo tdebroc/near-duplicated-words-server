@@ -14,7 +14,7 @@
 
         $scope.findDuplicates = function() {
             var text = $("#text").val()
-            console.log(text);
+            // console.log(text);
             IAConnectorService.findDuplicates(text)
                 .then(function(response) {
                      $scope.result = response.data.textResult;
