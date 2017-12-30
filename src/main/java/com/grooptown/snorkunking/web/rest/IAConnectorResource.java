@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import static com.grooptown.snorkunking.service.game.moves.MoveManager.getNextMove;
 
@@ -32,161 +33,58 @@ public class IAConnectorResource {
     @Autowired
     SimpMessageSendingOperations messagingTemplate;
 
-    public static Map<Integer, Game> gamesMap = new HashMap<>();
 
-    public static int NEXT_GAME_ID = 1;
+    int MIN_WORD_LENGTH = 3;
+    int NUMBER_CHAR_TO_KEEP_IN_THE_WORD = 5;
+    int NUMBER_OF_CHAR_DISTANCE = 15;
 
-    public static Map<String, PlayerInstance> playersInstances = new HashMap<>();
+    @PostMapping("/findDuplicates")
+    public Response findDuplicates(@RequestBody String myText)
+            throws InterruptedException {
+        System.out.println(myText);
+        String[] lines = myText.split("\n");
+        LinkedBlockingQueue currentWords = new LinkedBlockingQueue();
 
-    public IAConnectorResource() {
-        init();
-    }
+        StringBuilder result = new StringBuilder();
 
-    @GetMapping("/init")
-    public void init() {
-        NEXT_GAME_ID = 1;
-        gamesMap = new HashMap<>();
-        createNewGame(2.0, 3, 3);
-    }
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i];
 
-    @GetMapping("/game")
-    public Game createNewGame(@RequestParam(required = false) Double oxygenFactor,
-                              @RequestParam(required = false) Integer caveCount,
-                              @RequestParam(required = false) Integer caveWidth) {
-        int idGame = addGameToGamesMap(oxygenFactor, caveCount, caveWidth);
-        refreshGames();
-        return gamesMap.get(idGame);
-    }
+            String[] words = line.split(" ");
+            for (int j = 0; j < words.length; j++) {
+                String word = words[j];
+                if (word != null && word.length() > MIN_WORD_LENGTH) {
+                        String SmallWord =
+                            word.length() >  NUMBER_CHAR_TO_KEEP_IN_THE_WORD ?
+                            word.substring(0, NUMBER_CHAR_TO_KEEP_IN_THE_WORD) : word;
 
-    @GetMapping("/game/{idGame}")
-    public Game getGame(@PathVariable Integer idGame) {
-        System.out.println("Get Game: " + idGame);
-        return gamesMap.get(idGame);
-    }
-
-
-    @GetMapping("/games")
-    public Set<Integer> getGames() {
-        return gamesMap.keySet();
-    }
-
-    @GetMapping(value = "/addPlayer")
-    public PlayerInstance addPlayer(@RequestParam(value = "idGame") int idGame,
-                                    @RequestParam(value = "playerName", required = false) String playerName) {
-        Game game = gamesMap.get(idGame);
-        if (game.isStarted() ||
-            game.getPlayers().size() >= Game.MAX_NUM_PLAYER) {
-            return null;
-        }
-        String userId;
-        do {
-            userId = UUID.randomUUID().toString();
-        } while (playersInstances.containsKey(userId));
-
-        PlayerInstance playerInstance = new PlayerInstance(idGame, game.getPlayers().size(), userId);
-        game.addPlayer(playerName);
-        refreshGame(game);
-        playersInstances.put(userId, playerInstance);
-        return playerInstance;
-    }
-
-    @GetMapping(value = "/startGame")
-    public boolean startGame(@RequestParam(value = "idGame") int idGame) {
-        Game game = gamesMap.get(idGame);
-        game.startGame();
-        refreshGame(game);
-        return true;
-    }
-
-
-    @RequestMapping(method = RequestMethod.GET, value = "/sendMove")
-    public ResponseEntity<MessageResponse> sendMove(@RequestParam(value = "playerUUID") String playerUUID,
-                                                    @RequestParam(value = "move") String moveString) {
-        System.out.println(playerUUID);
-        PlayerInstance playerInstance = playersInstances.get(playerUUID);
-        System.out.println(playerInstance);
-        System.out.println(playersInstances);
-        if (playerInstance == null) {
-            return sendBadRequest("Unknown User");
-        }
-        Game game = gamesMap.get(playerInstance.getIdGame());
-        if (game == null) {
-            return sendBadRequest("Unknown Game");
-        }
-        if (!game.isStarted()) {
-            return sendBadRequest("Game has not started.");
-        }
-        if (game.isFinished()) {
-            return sendBadRequest("Game is Finished.");
-        }
-        if (!playersInstances.containsKey(playerUUID)) {
-            return sendBadRequest("Unknown player");
-        }
-        if (game.getCurrentIdPlayerTurn() != playerInstance.getIdPlayer()) {
-            return sendBadRequest("It's not the turn of player " + (playerInstance.getIdPlayer() + 1));
-        }
-        Move nextMove = getNextMove(moveString);
-
-        Player player = playerInstance.getPlayerFromInstance(game);
-
-        if (!MoveManager.isValidMove(nextMove, game, player)) {
-            return sendBadRequest("Wrong Move");
-        }
-
-        nextMove.playMove(game, player);
-        RecordMove recordMove = new RecordMove(moveString, playerInstance.getIdPlayer());
-        game.getMoveList().add(recordMove);
-        game.getCurrentStage().prepareMove(game);
-        refreshGame(game);
-        return sendValidResponse("OK");
-    }
-
-    @RequestMapping(method = RequestMethod.GET, value = "/getOpponentMoves")
-    public ResponseEntity<Game> getOpponentMoves(@RequestParam(value = "playerUUID") String playerUUID) throws URISyntaxException, InterruptedException {
-        PlayerInstance playerInstance = playersInstances.get(playerUUID);
-        if (playerInstance == null) {
-            return null;
-        }
-        Game game = gamesMap.get(playerInstance.getIdGame());
-        int timeRequest = 0;
-        try {
-            while (game.getCurrentIdPlayerTurn() != playerInstance.getIdPlayer() || !game.isStarted()) {
-                int sleepDuration = 100;
-                // System.out.println("Sleeping for " + sleepDuration + "ms");
-                try {
-                    Thread.sleep(sleepDuration);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt(); // restore interrupted status
-                }
-                timeRequest += sleepDuration;
-                if (timeRequest > 60 * 1000 * 10) {
-                    return null;
+                    if (currentWords.contains(SmallWord)) {
+                        result.append("## ALERT : " + SmallWord + " is duplicated\n");
+                        result.append(line + "\n\n");
+                    }
+                    currentWords.put(word);
+                    if (currentWords.size() > NUMBER_OF_CHAR_DISTANCE) {
+                        currentWords.poll();
+                    }
                 }
             }
-        } catch (RuntimeException e) {
-            System.out.println("Run time catched for " + e + "");
+
         }
-        return new ResponseEntity<>(game, HttpStatus.OK);
+        Response textResult = new Response();
+        textResult.textResult = result.toString();
+        return textResult;
     }
 
-    public int addGameToGamesMap(Double oxygenFactor, Integer caveCount, Integer caveWidth) {
-        System.out.println("oxygenFactor=" + oxygenFactor + " and caveCount=" + caveCount);
-        Game game = new Game(oxygenFactor == null ? 2.0 : oxygenFactor,
-            caveCount == null ? 3 : caveCount,
-            caveWidth == null ? 1 : caveWidth);
-        int newLyGameId = NEXT_GAME_ID;
-        game.setIdGame(newLyGameId);
-        gamesMap.put(newLyGameId, game);
-        NEXT_GAME_ID++;
-        return newLyGameId;
-    }
+    public class Response {
+        String textResult;
 
-    public ResponseEntity<MessageResponse> sendBadRequest(String message) {
-        return new ResponseEntity<>(new MessageResponse(message, null), HttpStatus.OK);
-    }
+        public String getTextResult() {
+            return textResult;
+        }
 
-    public ResponseEntity<MessageResponse> sendValidResponse(String message) {
-        return new ResponseEntity<>(new MessageResponse(null, message), HttpStatus.OK);
+        public void setTextResult(String textResult) {
+            this.textResult = textResult;
+        }
     }
 
     //==================================================================================================================
@@ -194,7 +92,7 @@ public class IAConnectorResource {
     //==================================================================================================================
     private void refreshGames() {
         if (messagingTemplate != null) {
-            messagingTemplate.convertAndSend("/topic/refreshGames", getGames());
+            messagingTemplate.convertAndSend("/topic/refreshGames", "test");
         }
     }
 

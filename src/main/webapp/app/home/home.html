@@ -1,119 +1,30 @@
-<style>
-    .moveUp {
-        margin-top: 3px;
-        margin-left: -3px;
-        font-size: 50px !important;
-    }
-    .moveDown {
-        margin-top: 6px;
-        margin-left: -3px;
-        font-size: 50px !important;
-    }
-    .movePick {
-        margin-top: 7px;
-        margin-left: 2px;
-        font-size: 42px !important;
-    }
-    .selectedGame {
-        background-color: rgb(220,220,220);
-    }
-</style>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<center><h1 >Snorkunking</h1></center>
+<center><h1 >Text Helper</h1></center>
 <div ng-cloak>
     <div class="row">
 
         <div class="col-md-6">
-            <h1 >Menu:</h1>
+            <h1 >Enter your text:</h1>
 
             <md-input-container>
-                <label>Oxygen Factor</label>
-                <input type="number" ng-model="oxygenFactor" placeholder="oxygenFactor" id="oxygenFactor"/>
-            </md-input-container>
-            <md-input-container>
-                <label>Cave Count</label>
-                <input type="number" ng-model="caveCount" placeholder="caveCount" id="caveCount"/>
-            </md-input-container>
-            <md-input-container>
-                <label>Cave Width</label>
-                <input type="number" ng-model="caveWidth" placeholder="caveWidth" id="caveWidth"/>
+                <label>Text</label>
+                <textarea name="bio" ng-model="text" required id="text"
+                          rows="10" style="width:400px"></textarea>
+
             </md-input-container>
 
-
-
-            <md-button class="md-raised md-primary" ng-click="createGame()">
-                + Create New Game !
-            </md-button>
-            <md-input-container>
-                <label>Player Name</label>
-                <input ng-model="playerName" placehoder="Player name" id="playerName"
-                        />
-            </md-input-container>
-            <md-button class="md-raised md-primary" ng-click="addPlayer()"
-            ng-hide="currentGame.started">
-                + Add Player
-            </md-button>
-            <md-button class="md-raised md-primary" ng-click="startGame()"
-                       ng-hide="currentGame.started">
-                <i class="material-icons" style="position: absolute;top: 5px;">play_arrow</i>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Start Game
-            </md-button>
-
-
-
-            <div ng-repeat="player in currentGame.players track by $index">
-                {{player.name}} has
-                {{player.treasureCount}} treasures and hold {{player.chestsHolding.length}} chests.
-
-
-
-                <div ng-if="$index == currentGame.currentIdPlayerTurn">
-                    It's turn of {{player.name}} !
-                </div>
-
-                <div ng-if="$index == currentGame.currentIdPlayerTurn && isCurrentPlayer(currentGame.idGame, currentGame.currentIdPlayerTurn)">
-
-                    It's your Turn !
-                    Choose your action:
-
-                    <md-button class="md-fab md-primary md-hue-2" ng-click="sendMove(1, $index)">
-                        <i class="material-icons moveUp">keyboard_arrow_up</i>
-                    </md-button>
-                    <md-button class="md-fab md-primary md-hue-2" ng-click="sendMove(2, $index)">
-                        <i class="material-icons moveDown">keyboard_arrow_down</i>
-                    </md-button>
-                    <md-button class="md-fab md-primary md-hue-2" ng-click="sendMove(4, $index)">
-                        <i class="material-icons moveUp">keyboard_arrow_left</i>
-                    </md-button>
-                    <md-button class="md-fab md-primary md-hue-2" ng-click="sendMove(5, $index)">
-                        <i class="material-icons moveDown">keyboard_arrow_right</i>
-                    </md-button>
-                    <md-button class="md-fab md-primary md-hue-2" ng-click="sendMove(3, $index)">
-                        <i class="material-icons movePick">add_box</i>
-                    </md-button>
-
-
-                </div>
-            </div>
             <br/>
-            <md-list-item class="md-3-line" ng-repeat="game in games" ng-click="selectGame(game)"
-                          ng-class='game == currentGame.idGame ? "selectedGame" : ""'>
+            <md-button class="md-raised md-primary" ng-click="findDuplicates()">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Find duplicates
+            </md-button>
 
-                <div class="md-list-item-text" layout="column">
-                    <h3>=> Game {{ game }}</h3>
-                </div>
-            </md-list-item>
+
         </div>
 
         <div class="col-md-6" >
-            <div style="margin: 10px; ">
-                <h3>=> Game {{ currentIdGame }}</h3>
-                <p style="white-space: pre;font-family: Courier;">{{ currentGame.asString }}</p>
+            <p style="white-space: pre;font-family: Courier;">
+                {{result}}
+            </p>
 
-            </div>
         </div>
     </div>
 </div>
-<md-button class="md-raised md-warn" ng-click="reboot()">
-    Erase all games in server + current client.
-</md-button>
