@@ -36,7 +36,7 @@ public class IAConnectorResource {
 
     int MIN_WORD_LENGTH = 3;
     int NUMBER_CHAR_TO_KEEP_IN_THE_WORD = 5;
-    int NUMBER_OF_CHAR_DISTANCE = 15;
+    int NUMBER_OF_CHAR_DISTANCE = 50;
 
     @PostMapping("/findDuplicates")
     public Response findDuplicates(@RequestBody String myText)
@@ -53,21 +53,27 @@ public class IAConnectorResource {
             String[] words = line.split(" ");
             for (int j = 0; j < words.length; j++) {
                 String word = words[j];
+                String wordResult = word;
                 if (word != null && word.length() > MIN_WORD_LENGTH) {
                         String SmallWord =
                             word.length() >  NUMBER_CHAR_TO_KEEP_IN_THE_WORD ?
                             word.substring(0, NUMBER_CHAR_TO_KEEP_IN_THE_WORD) : word;
 
                     if (currentWords.contains(SmallWord)) {
-                        result.append("## ALERT : " + SmallWord + " is duplicated\n");
-                        result.append(line + "\n\n");
+                        // result.append("## ALERT : " + SmallWord + " is duplicated\n");
+                        // result.append(line + "\n\n");
+                        wordResult =
+                            "<span style=\"color:red\">" + word + "</span>";
                     }
                     currentWords.put(word);
                     if (currentWords.size() > NUMBER_OF_CHAR_DISTANCE) {
                         currentWords.poll();
                     }
                 }
+                result.append(wordResult);
+                result.append(" ");
             }
+            result.append("<br/>");
 
         }
         Response textResult = new Response();

@@ -21,8 +21,13 @@
         </div>
 
         <div class="col-md-6" >
-            <p style="white-space: pre;font-family: Courier;">
-                {{result}}
+            <style>
+                .resultP span {
+                    color: red;
+                }
+            </style>
+            <p style="font-family: Courier;" class="resultP"
+               ng-bind-html="result">
             </p>
 
         </div>
