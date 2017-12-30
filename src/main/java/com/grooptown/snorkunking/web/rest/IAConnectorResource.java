@@ -60,13 +60,14 @@ public class IAConnectorResource {
                             wordToTest.length() >  NUMBER_CHAR_TO_KEEP_IN_THE_WORD ?
                             wordToTest.substring(0, NUMBER_CHAR_TO_KEEP_IN_THE_WORD) : wordToTest;
 
+                        System.out.println("#######");
+                        System.out.println(wordToTest);
+                        System.out.println(currentWords);
+
                     if (currentWords.contains(wordToTest)) {
-                        // result.append("## ALERT : " + SmallWord + " is duplicated\n");
-                        // result.append(line + "\n\n");
-                        wordResult =
-                            "<span style=\"color:red\">" + word + "</span>";
+                        wordResult = "<span style=\"color:red\">" + word + "</span>";
                     }
-                    currentWords.put(word);
+                    currentWords.put(wordToTest);
                     if (currentWords.size() > NUMBER_OF_CHAR_DISTANCE) {
                         currentWords.poll();
                     }
