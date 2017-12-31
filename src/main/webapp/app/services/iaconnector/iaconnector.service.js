@@ -14,8 +14,12 @@
             }).then(callback, callbackError);
         }
         return {
-            findDuplicates : function (text) {
-                return $http.post('/api/iaconnector/findDuplicates', text);
+            findDuplicates : function (text, minWordLength, numberCharToKeepInTheWord, numberOfWordDistance) {
+                return $http.post('/api/iaconnector/findDuplicates?'
+                                    + "minWordLength=" + minWordLength + "&"
+                                    + "numberCharToKeepInTheWord=" + numberCharToKeepInTheWord + "&"
+                                    + "numberOfWordDistance=" + numberOfWordDistance + ""
+                                    ,text);
             }
         }
     }

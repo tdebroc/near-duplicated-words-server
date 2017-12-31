@@ -6,6 +6,18 @@
             <h1 >Enter your text:</h1>
 
             <md-input-container>
+                <label>Minimum Length of a word</label>
+                <input type="number" ng-model="minWordLength" placeholder="minWordLength" id="minWordLength"/>
+            </md-input-container>
+            <md-input-container>
+                <label>Number of Char to keep in the word</label>
+                <input type="number" ng-model="numberCharToKeepInTheWord" placeholder="numberCharToKeepInTheWord" id="numberCharToKeepInTheWord"/>
+            </md-input-container>
+            <md-input-container>
+                <label>Number of Word Distance</label>
+                <input type="number" ng-model="numberOfWordDistance" placeholder="numberOfWordDistance" id="numberOfWordDistance"/>
+            </md-input-container>
+            <md-input-container>
                 <label>Text</label>
                 <textarea name="bio" ng-model="text" required id="text"
                           rows="10" style="width:400px"></textarea>
@@ -23,9 +35,10 @@
         <div class="col-md-6" >
             <style>
                 .resultP span {
-                    color: red;
+                    font-weight: bold;
                 }
             </style>
+            <h2 ng-if="numberDuplicated"> We found {{numberDuplicated}} word duplicated.</h2>
             <p style="font-family: Courier;" class="resultP"
                ng-bind-html="result">
             </p>
